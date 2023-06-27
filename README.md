@@ -1,2 +1,2 @@
-# SBOM-COSIGN-TEST-CICD
-Sample CICD for generating SBOM Artifacts
+# test-cosign-sbom
+Testing of Cosign and SBOM
