@@ -39,4 +39,4 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Push Docker image to registry
-        run: docker push chakravartikothadiya/sample-ngnix-server
+        run: docker push chakravartikothadiya/sample-ngnix-server:v1
