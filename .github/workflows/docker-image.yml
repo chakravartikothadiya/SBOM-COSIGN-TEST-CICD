@@ -15,10 +15,26 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build the Docker image
-        run: docker build -t chakravartikothadiya/sample-ngnix-server .
+        run: docker build -t chakravartikothadiya/sample-ngnix-server:v1 .
 
       - name: Log into Docker Hub (or other container registry)
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: cosign-installer
+        uses: sigstore/cosign-installer@v3.0.5
+
+      - name: Generate Cosign keys and assign to secrets
+        uses: sigstore/cosign-actions/keygen@v0.2.0
+        id: cosign_keys
+
+      - name: Assign private key to secret
+        run: |
+          echo "::add-mask::${{ steps.cosign_keys.outputs.private_key }}"
+          echo "::add-mask::${{ steps.cosign_keys.outputs.public_key }}"
+          echo "::set-env name=COSIGN_PRIVATE_KEY::${{ steps.cosign_keys.outputs.private_key }}"
+          echo "::set-env name=COSIGN_PUBLIC_KEY::${{ steps.cosign_keys.outputs.public_key }}"
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Push Docker image to registry
         run: docker push chakravartikothadiya/sample-ngnix-server
