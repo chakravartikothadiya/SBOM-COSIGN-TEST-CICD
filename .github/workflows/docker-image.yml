@@ -23,16 +23,18 @@ jobs:
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.5
 
-      - name: Generate Cosign keys and assign to secrets
-        uses: sigstore/cosign-actions/keygen@v0.2.0
-        id: cosign_keys
+      - name: Generate Cosign keys
+        run: |
+          mkdir -p ~/.cosign
+          openssl genpkey -algorithm ED25519 -out ~/.cosign/private.key
+          openssl pkey -in ~/.cosign/private.key -pubout -out ~/.cosign/public.key
 
       - name: Assign private key to secret
         run: |
-          echo "::add-mask::${{ steps.cosign_keys.outputs.private_key }}"
-          echo "::add-mask::${{ steps.cosign_keys.outputs.public_key }}"
-          echo "::set-env name=COSIGN_PRIVATE_KEY::${{ steps.cosign_keys.outputs.private_key }}"
-          echo "::set-env name=COSIGN_PUBLIC_KEY::${{ steps.cosign_keys.outputs.public_key }}"
+          echo "::add-mask::$(cat ~/.cosign/private.key)"
+          echo "::add-mask::$(cat ~/.cosign/public.key)"
+          echo "::set-env name=COSIGN_PRIVATE_KEY::$(cat ~/.cosign/private.key)"
+          echo "::set-env name=COSIGN_PUBLIC_KEY::$(cat ~/.cosign/public.key)"
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
