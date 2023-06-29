@@ -2,69 +2,23 @@ name: SBOM and Image
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Build the Docker image
-      run: docker build -t ajinkya1986/ngnix:1.0 .
+      - name: Build the Docker image
+        run: docker build -t chakravartikothadiya/sample-ngnix-server .
 
-    - name: Log into Docker Hub (or other container registry)
-      run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log into Docker Hub (or other container registry)
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: cosign-installer
-      uses: sigstore/cosign-installer@v3.0.5
-
-    - name: Sign image with a key
-      run: |
-        cosign sign --key env://COSIGN_PRIVATE_KEY  docker.io/ajinkya1986/ngnix:1.0 -y
-      env:
-        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-
-    - name: Verify the image with public key
-      run: |
-        cosign verify --key env://COSIGN_PUBLIC_KEY docker.io/ajinkya1986/ngnix:1.0
-      env:
-        COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
-
-    - name: Push Docker image to registry
-      run: docker push ajinkya1986/ngnix:1.0
-    
-    - uses: anchore/sbom-action@v0
-      with: 
-        image: ajinkya1986/ngnix:1.0
-        registry-username: ajinkya1986
-        registry-password: ${{ secrets.DOCKER_PASSWORD }}
-        artifact-name: ajinkya-sbom.spdx.json
-
-    - uses: anchore/sbom-action/publish-sbom@v0
-      with:
-        sbom-artifact-match: ".*\\.spdx$"
-
-    - uses: actions/download-artifact@v3
-      with:
-        name: ajinkya-sbom.spdx.json
-
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v1'
-      with:
-        service_account: ${{ secrets.SERVICE_ACCOUNT }}
-        credentials_json: ${{ secrets.CREDENTIALS_JSON }}
-
-    - id: 'upload-file'
-      uses: 'google-github-actions/upload-cloud-storage@v1'
-      with:
-        path: '/home/runner/work/test-cosign-sbom/test-cosign-sbom/ajinkya-sbom.spdx.json'
-        destination: 'test-sbom-upload'
-    
+      - name: Push Docker image to registry
+        run: docker push chakravartikothadiya/sample-ngnix-server
