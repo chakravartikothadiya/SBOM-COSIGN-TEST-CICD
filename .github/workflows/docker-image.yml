@@ -23,12 +23,18 @@ jobs:
       - name: Push Docker image to registry
         run: docker push chakravartikothadiya/sample-ngnix-server:v1
 
+      - name: Get Docker image digest
+        id: get_digest
+        run: |
+          digest=$(docker image inspect --format='{{index .RepoDigests 0}}' chakravartikothadiya/sample-ngnix-server:v1)
+          echo "::set-output name=digest::$digest"
+
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.5
 
       - name: Sign image with a key
         run: |
-          cosign sign --key env://COSIGN_PRIVATE_KEY  chakravartikothadiya/sample-ngnix-server:v1 -y
+          cosign sign --key env://COSIGN_PRIVATE_KEY ${{ steps.get_digest.outputs.digest }} -y
         env:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
