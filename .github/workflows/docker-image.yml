@@ -24,40 +24,9 @@ jobs:
       - name: Log into Docker Hub (or other container registry)
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get existing tags from Docker Hub repository
-        id: get-existing-tags
-        run: |
-          IMAGE_NAME="chakravartikothadiya/sample-ngnix-server"
-          DOCKERHUB_API="https://hub.docker.com/v2/repositories/${IMAGE_NAME}/tags"
-
-          response=$(curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" $DOCKERHUB_API)
-          tags=$(echo "$response" | jq -r '.results[].name')
-
-          if [[ -n $tags ]]; then
-            echo "::set-output name=tags::$tags"
-          else
-            echo "No existing tags found in the repository."
-            exit 1
-          fi
-
       - name: Delete Initial Files from Docker Hub repository
         run: |
-          tags="${{ steps.get-existing-tags.outputs.tags }}"
-
-          # Check if tags array is null or empty
-          if [ -z "$tags" ] || [ "$tags" == "null" ]; then
-            echo "No existing tags found in the repository. Skipping deletion."
-            exit 0
-          fi
-
-          # Delete each tag
-          for tag in $tags
-          do
-            echo "Deleting tag: $tag"
-            curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" -X DELETE "$DOCKERHUB_API/$tag/"
-          done
-
-      # Rest of the workflow steps remain the same
+          tags=curl -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} -X "DELETE" https://cloud.docker.com/v2/repositories/chakravartikothadiya/sample-ngnix-server/
 
       - name: Push Docker image to registry
         run: docker push chakravartikothadiya/sample-ngnix-server:${{ steps.generate-version-tag.outputs.tag }}
