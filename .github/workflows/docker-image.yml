@@ -32,8 +32,8 @@ jobs:
           # Get the existing tags
           tags=$(curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" $DOCKERHUB_API | jq -r '.results[].name')
 
-          # Check if tags array is empty
-          if [ -z "$tags" ]; then
+          # Check if tags array is null or empty
+          if [ -z "$tags" ] || [ "$tags" == "null" ]; then
             echo "No existing tags found in the repository. Skipping deletion."
             exit 0
           fi
