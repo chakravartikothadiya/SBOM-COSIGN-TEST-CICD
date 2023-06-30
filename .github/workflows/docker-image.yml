@@ -14,19 +14,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Generate new version tag
+        id: generate-version-tag
+        run: echo "::set-output name=tag::v$(date +'%Y%m%d%H%M%S')"
+
       - name: Build the Docker image
-        run: docker build -t chakravartikothadiya/sample-ngnix-server:v1 .
+        run: docker build -t chakravartikothadiya/sample-ngnix-server:${{ steps.generate-version-tag.outputs.tag }} .
 
       - name: Log into Docker Hub (or other container registry)
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push Docker image to registry
-        run: docker push chakravartikothadiya/sample-ngnix-server:v1
+        run: docker push chakravartikothadiya/sample-ngnix-server:${{ steps.generate-version-tag.outputs.tag }}
 
       - name: Get Docker image digest
         id: get_digest
         run: |
-          digest=$(docker image inspect --format='{{index .RepoDigests 0}}' chakravartikothadiya/sample-ngnix-server:v1)
+          digest=$(docker image inspect --format='{{index .RepoDigests 0}}' chakravartikothadiya/sample-ngnix-server:${{ steps.generate-version-tag.outputs.tag }})
           echo "::set-output name=digest::$digest"
 
       - name: cosign-installer
