@@ -23,20 +23,18 @@ jobs:
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.5
 
-      - name: Generate Cosign keys
+      - name: Sign image with a key
         run: |
-          mkdir -p ~/.cosign
-          openssl genpkey -algorithm ED25519 -out ~/.cosign/private.key
-          openssl pkey -in ~/.cosign/private.key -pubout -out ~/.cosign/public.key
-
-      - name: Assign private key to secret
-        run: |
-          echo "::add-mask::$(cat ~/.cosign/private.key)"
-          echo "::add-mask::$(cat ~/.cosign/public.key)"
-          echo "::set-env name=COSIGN_PRIVATE_KEY::$(cat ~/.cosign/private.key)"
-          echo "::set-env name=COSIGN_PUBLIC_KEY::$(cat ~/.cosign/public.key)"
+          cosign sign --key env://COSIGN_PRIVATE_KEY  chakravartikothadiya/sample-ngnix-server:v1 -y
         env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+      - name: Verify the image with public key
+        run: |
+          cosign verify --key env://COSIGN_PUBLIC_KEY chakravartikothadiya/sample-ngnix-server:v1
+        env:
+          COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
 
       - name: Push Docker image to registry
         run: docker push chakravartikothadiya/sample-ngnix-server:v1
