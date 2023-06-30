@@ -32,7 +32,12 @@ jobs:
 
           tags=$(curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" $DOCKERHUB_API | jq -r '.results[].name')
 
-          echo "::set-output name=tags::$tags"
+          if [[ -n $tags ]]; then
+            echo "::set-output name=tags::$tags"
+          else
+            echo "No existing tags found in the repository."
+            exit 1
+          fi
 
       - name: Delete Initial Files from Docker Hub repository
         run: |
