@@ -20,6 +20,9 @@ jobs:
       - name: Log into Docker Hub (or other container registry)
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Push Docker image to registry
+        run: docker push chakravartikothadiya/sample-ngnix-server:v1
+
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.5
 
@@ -35,6 +38,3 @@ jobs:
           cosign verify --key env://COSIGN_PUBLIC_KEY chakravartikothadiya/sample-ngnix-server:v1
         env:
           COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
-
-      - name: Push Docker image to registry
-        run: docker push chakravartikothadiya/sample-ngnix-server:v1
