@@ -30,7 +30,8 @@ jobs:
           IMAGE_NAME="chakravartikothadiya/sample-ngnix-server"
           DOCKERHUB_API="https://hub.docker.com/v2/repositories/${IMAGE_NAME}/tags"
 
-          tags=$(curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" $DOCKERHUB_API | jq -r '.results[].name')
+          response=$(curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" $DOCKERHUB_API)
+          tags=$(echo "$response" | jq -r '.results[].name')
 
           if [[ -n $tags ]]; then
             echo "::set-output name=tags::$tags"
