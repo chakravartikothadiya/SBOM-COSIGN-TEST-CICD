@@ -24,6 +24,21 @@ jobs:
       - name: Log into Docker Hub (or other container registry)
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Delete Initial Files from Docker Hub repository
+        run: |
+          IMAGE_NAME="chakravartikothadiya/sample-ngnix-server"
+          DOCKERHUB_API="https://hub.docker.com/v2/repositories/${IMAGE_NAME}/tags"
+
+          # Get the existing tags
+          tags=$(curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" $DOCKERHUB_API | jq -r '.results[].name')
+
+          # Delete each tag
+          for tag in $tags
+          do
+            echo "Deleting tag: $tag"
+            curl -sSL -H "Authorization: Bearer ${{ secrets.DOCKER_PASSWORD }}" -X DELETE "$DOCKERHUB_API/$tag/"
+          done
+
       - name: Push Docker image to registry
         run: docker push chakravartikothadiya/sample-ngnix-server:${{ steps.generate-version-tag.outputs.tag }}
 
